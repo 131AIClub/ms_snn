@@ -8,7 +8,7 @@ from mindspore.dataset import GeneratorDataset
 from net import CIFAR10DVSNet
 from dataset import DVSSource
 
-context.set_context(mode=context.PYNATIVE_MODE, device_target="GPU")
+context.set_context(mode=context.STRICT, device_target="GPU")
 
 # 最佳模型保存路径
 best_ckpt_dir = "./BestCheckpoint"
@@ -33,7 +33,7 @@ set = GeneratorDataset(source=DVSSource(dataset_path, class_num=class_num), colu
 train_ds, test_ds = set.split([0.9, 0.1])
 # shuffle训练集并batch
 train_ds = train_ds.shuffle(train_ds.get_dataset_size())
-train_ds, test_ds = train_ds.batch(16), test_ds.batch(16)
+train_ds, test_ds = train_ds.batch(8), test_ds.batch(8)
 
 data_loader_train = train_ds.create_tuple_iterator(num_epochs=num_epochs)
 data_loader_test = test_ds.create_tuple_iterator(num_epochs=num_epochs)
@@ -46,7 +46,7 @@ model = Model(net, loss_fn=loss_fn,
               optimizer=optimizer, metrics={'accuracy'})
 loss_moniter = LossMonitor(10)
 
-model.fit(10, train_ds, test_ds, 1, loss_moniter, True)
+model.fit(10, train_ds, test_ds, 1, loss_moniter)
 
 # def forward_fn(inputs):
 #     inputs = inputs.transpose((1, 0, 2, 3, 4))
