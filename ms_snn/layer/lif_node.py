@@ -3,7 +3,7 @@ import mindspore as ms
 import mindspore.nn as nn
 import mindspore.ops as ops
 
-from .atan import ATan
+from ..sorrogate.atan import ATan
 
 
 class LIFNode(nn.Cell):

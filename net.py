@@ -1,6 +1,7 @@
 import mindspore.nn as nn
-from lif_model import ATan, LIFNode, VotingLayer
 import mindspore.ops as ops
+from ms_snn.layer import LIFNode, VotingLayer
+from ms_snn.sorrogate import ATan
 
 
 class CIFAR10DVSNet(nn.Cell):
