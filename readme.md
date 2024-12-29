@@ -40,7 +40,20 @@ python -m train.py
 This will initialize the model and start training with the provided configuration file.
 
 For a full list of commands and configuration options, see the train.py script or refer to the documentation in the repository.
-Contributing
+## TODO
+
+- [ ] Add support for additional SNN layers and operators.
+- [ ] Improve training efficiency and performance, especially for larger models.
+- [ ] Provide more detailed documentation and tutorials for setting up experiments.
+- [ ] Investigate integration with other MindSpore optimization mechanisms.
+- [ ] Test and improve support for dynamic graphs, as well as compatibility with other model types.
+
+## Known Bugs
+- Currently, the implementation does not support execution in static graph mode in MindSpore.
+- Some MindSpore optimization mechanisms (e.g., automatic mixed precision) may not be fully compatible with the current implementation.
+
+These issues are actively being worked on, and fixes will be incorporated in future updates.
+## Contributing
 
 Contributions to the repository are welcome! If you find any bugs, have suggestions for improvements, or want to add more operators or features, feel free to submit an issue or pull request.
 
@@ -50,8 +63,8 @@ Please ensure any new code is well-tested and follows the existing code style.
 This project is licensed under the MIT License - see the LICENSE file for details.
 ## Acknowledgements
 
-Special thanks to the MindSpore community for their ongoing work in the deep learning field.
-Inspired by various research on spiking neural networks and their application to machine learning tasks.
+- Special thanks to the MindSpore community for their ongoing work in the deep learning field.
+- Inspired by various research on spiking neural networks and their application to machine learning tasks.
 
 ## Disclaimer
 

@@ -8,7 +8,7 @@ from mindspore.dataset import GeneratorDataset
 from net import CIFAR10DVSNet
 from dataset import DVSSource
 
-context.set_context(mode=context.STRICT, device_target="GPU")
+context.set_context(mode=context.PYNATIVE_MODE, device_target="GPU")
 
 # 最佳模型保存路径
 best_ckpt_dir = "./BestCheckpoint"
