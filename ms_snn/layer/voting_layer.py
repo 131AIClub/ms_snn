@@ -9,6 +9,7 @@ class VotingLayer(nn.Cell):
         super().__init__()
         self.voting_size = voting_size
 
+    @ms.jit
     def construct(self, x: ms.Tensor):
         x = x.expand_dims(0)
         return F.avg_pool1d(x, self.voting_size, self.voting_size).squeeze(0)

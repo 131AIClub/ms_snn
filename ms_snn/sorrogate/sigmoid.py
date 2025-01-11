@@ -15,7 +15,8 @@ class Sigmoid(SurrogateBase):
             .target("GPU") \
             .get_op_info()
 
-        aot_bprop = SurrogateBase.get_aot_op("Sigmoid", aot_bprop_info)
+        aot_bprop = SurrogateBase.get_aot_op(
+            "SigmoidBackward", aot_bprop_info, lambda x, _: x, lambda x, _: x)
 
         def bprop(x, out, dout):
             res = aot_bprop(x, dout)

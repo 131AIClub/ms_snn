@@ -1,5 +1,6 @@
 import mindspore.nn as nn
 from mindspore.ops import Custom, CustomRegOp, DataType
+from mindspore import dtype, jit
 from importlib.resources import files, as_file
 
 
@@ -8,11 +9,12 @@ class SurrogateBase(nn.Cell):
         super(SurrogateBase, self).__init__()
 
     @staticmethod
-    def get_aot_op(name: str, op_info, bprop=None):
+    def get_aot_op(name: str, op_info, out_dtype, out_shape, bprop=None):
         pkg = files("ms_snn")
-        with as_file(pkg/"cuda"/"libms_snn.so") as path:
-            op = Custom(func=f"{path}:{name}", out_dtype=lambda x: x,
-                        out_shape=lambda x: x, bprop=bprop, func_type="aot", reg_info=op_info)
+        with as_file(pkg / "sorrogate"/"cuda"/"libms_snn.so") as path:
+            # 这里不用管什么类型
+            op = Custom(func=f"{path}:{name}", out_dtype=out_dtype,
+                        out_shape=out_shape, bprop=bprop, func_type="aot", reg_info=op_info)
         return op
 
     @staticmethod
@@ -23,7 +25,8 @@ class SurrogateBase(nn.Cell):
             .dtype_format(DataType.F32_Default, DataType.F32_Default) \
             .target("GPU") \
             .get_op_info()
-        return SurrogateBase.get_aot_op("Heaviside", op_info, bprop)
+        return SurrogateBase.get_aot_op("Heaviside", op_info, lambda x: x, lambda x: x, bprop)
 
+    @jit
     def construct(self, x):
         return self.op(x)

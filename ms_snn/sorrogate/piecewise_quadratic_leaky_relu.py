@@ -17,7 +17,7 @@ class PiecewiseQuadraticLeakyReLU(SurrogateBase):
             .get_op_info()
 
         aot_bprop = SurrogateBase.get_aot_op(
-            "PiecewiseQuadraticLeakyReLU", aot_bprop_info)
+            "PiecewiseQuadraticLeakyReLUBackward", aot_bprop_info, lambda x, _: x, lambda x, _: x)
 
         def bprop(x, out, dout):
             res = aot_bprop(x, dout)

@@ -46,8 +46,8 @@ class LIFNode(nn.Cell):
         return spike, v
 
     def v_float_to_tensor(self, x: ms.Tensor):
-        if self.v == None:
-            v_init = 0
+        if isinstance(self.v, float):
+            v_init = self.v
             self.v = ops.full_like(x, v_init)
 
     def neuronal_charge(self, x):
