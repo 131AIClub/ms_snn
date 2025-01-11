@@ -30,6 +30,8 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir],
                               cwd=self.build_temp, env=os.environ)
         subprocess.check_call(['cmake', '--build', '.'], cwd=self.build_temp)
+        subprocess.check_call(
+            ['mv', './libms_snn.so', ext.sourcedir], cwd=self.build_temp)
 
 
 setup(
@@ -50,6 +52,6 @@ setup(
         "build_ext": CMakeBuild,  # 使用自定义的 CMake 构建
     },
     package_data={
-        "ms_snn": ["cuda/build/libsnn_ms.so"],
+        "ms_snn": ["cuda/libsnn_ms.so"],
     }
 )

@@ -10,7 +10,7 @@ class SurrogateBase(nn.Cell):
     @staticmethod
     def get_aot_op(name: str, op_info, bprop=None):
         pkg = files("ms_snn")
-        with as_file(pkg/"cuda"/"build"/"libsnn_ms.so") as path:
+        with as_file(pkg/"cuda"/"libms_snn.so") as path:
             op = Custom(func=f"{path}:{name}", out_dtype=lambda x: x,
                         out_shape=lambda x: x, bprop=bprop, func_type="aot", reg_info=op_info)
         return op

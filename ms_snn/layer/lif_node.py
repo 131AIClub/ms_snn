@@ -22,7 +22,7 @@ class LIFNode(nn.Cell):
         self.lava_s_cale = 1 << 6
 
         self.tau = tau
-        self.v = ms.tensor(0.0, dtype=ms.float32)
+        self.v = None
 
     def construct(self, x: ms.Tensor):
         self.v_float_to_tensor(x)
@@ -46,8 +46,8 @@ class LIFNode(nn.Cell):
         return spike, v
 
     def v_float_to_tensor(self, x: ms.Tensor):
-        if isinstance(self.v, float):
-            v_init = self.v
+        if self.v == None:
+            v_init = 0
             self.v = ops.full_like(x, v_init)
 
     def neuronal_charge(self, x):
