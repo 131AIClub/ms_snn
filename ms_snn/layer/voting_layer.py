@@ -16,20 +16,30 @@ class VotingLayer(nn.Cell):
 
 
 if __name__ == '__main__':
-    # import torch
-    # from spikingjelly.activation_based import layer
-    x = ms.Tensor([[1.0, 2.0, 3.0, 3.0, 2.0, 3.0]])
-    voting_layer = VotingLayer(voting_size=3)
-    print("mindspore result:")
-    grad_fn = ms.value_and_grad(voting_layer)
-    y, grads = grad_fn(x)
-    print(y)
-    print(grads)
+    import numpy as np
+    import mindspore as ms
+    import torch
+    from mindspore import context
+    from spikingjelly.activation_based import layer
+    context.set_context(mode=context.PYNATIVE_MODE, device_target="GPU")
 
-    x = torch.tensor([[1.0, 2.0, 3.0, 3.0, 2.0, 3.0]], requires_grad=True)
-    voting_layer = layer.VotingLayer(3)
-    print("torch result:")
-    y = voting_layer(x)
-    print(y)
-    y.sum().backward(retain_graph=True)
-    print(x.grad)
+    # 加载数据并创建需要梯度的张量
+    array = np.random.randn(1000, 1000)*1e10
+    array_ms = ms.Tensor(array, dtype=ms.float32)
+    array_torch = torch.tensor(array, dtype=torch.float32, requires_grad=True)
+
+    # mindspore部分
+    atan_ms = VotingLayer()
+
+    def net(x):
+        return atan_ms(x).mean()
+    dout_ms = ms.grad(net, grad_position=0)(array_ms)
+
+    # torch部分
+    atan_torch = layer.VotingLayer()
+    result = atan_torch(array_torch).mean()
+    result.backward()
+    dout_torch = array_torch.grad
+
+    if not np.allclose(dout_ms.numpy(), dout_torch.numpy(), rtol=1e-5):
+        print("bad implement for file "+__file__)

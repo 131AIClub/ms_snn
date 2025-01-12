@@ -48,11 +48,11 @@ setup(
     packages=find_packages(),
     python_requires='>=3.9, <4.0',
     # CUDA 编译会在 build_ext 中处理
-    ext_modules=[CMakeExtension('ms_snn', 'ms_snn/sorrogate/cuda/')],
+    ext_modules=[CMakeExtension('ms_snn', 'ms_snn/surrogate/cuda/')],
     cmdclass={
         "build_ext": CMakeBuild,  # 使用自定义的 CMake 构建
     },
     package_data={
-        "ms_snn": ["sorrogate/cuda/libms_snn.so"],
+        "ms_snn": ["surrogate/cuda/libms_snn.so"],
     }
 )

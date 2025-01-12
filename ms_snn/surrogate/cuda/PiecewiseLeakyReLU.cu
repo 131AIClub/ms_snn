@@ -1,18 +1,18 @@
 #include "cuda_common.h"
 
-class PiecewiseQuadraticLeakyReLUKernelAttr : public AotKernelData {
+class PiecewiseLeakyReLUKernelAttr : public AotKernelData {
  public:
   float w_inv;
   float w;
   float c;
 };
 
-extern "C" int PiecewiseQuadraticLeakyReLUBackwardInit(int *ndims,
+extern "C" int PiecewiseLeakyReLUBackwardInit(int *ndims,
                                                        int64_t **shapes,
                                                        const char **dtypes,
                                                        AotExtra *extra) {
-  PiecewiseQuadraticLeakyReLUKernelAttr *kernel_ptr =
-      new PiecewiseQuadraticLeakyReLUKernelAttr;
+  PiecewiseLeakyReLUKernelAttr *kernel_ptr =
+      new PiecewiseLeakyReLUKernelAttr;
   float w = extra->Attr<float>("w");
   kernel_ptr->w_inv = 1.0f / w;
   kernel_ptr->w = w;
@@ -21,7 +21,7 @@ extern "C" int PiecewiseQuadraticLeakyReLUBackwardInit(int *ndims,
   return 0;
 }
 
-__global__ static void PiecewiseQuadraticLeakyReLUBackwardKernel(
+__global__ static void PiecewiseLeakyReLUBackwardKernel(
     const float *x, float w_inv, float w, float c, const float *dout, float *dx,
     int size) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -31,7 +31,7 @@ __global__ static void PiecewiseQuadraticLeakyReLUBackwardKernel(
   }
 }
 
-extern "C" int PiecewiseQuadraticLeakyReLUBackward(int nparam, void **params,
+extern "C" int PiecewiseLeakyReLUBackward(int nparam, void **params,
                                                    int *ndims, int64_t **shapes,
                                                    const char **dtypes,
                                                    void *stream,
@@ -47,7 +47,7 @@ extern "C" int PiecewiseQuadraticLeakyReLUBackward(int nparam, void **params,
   float *dx = static_cast<float *>(params[2]);
   AotExtra *extra = static_cast<AotExtra *>(extra_void);
   auto kernel_ptr =
-      static_cast<PiecewiseQuadraticLeakyReLUKernelAttr *>(extra->KernelData());
+      static_cast<PiecewiseLeakyReLUKernelAttr *>(extra->KernelData());
 
   size_t size = 1;
   for (int i = 0; i < ndims[2]; i++) {
@@ -55,7 +55,7 @@ extern "C" int PiecewiseQuadraticLeakyReLUBackward(int nparam, void **params,
   }
   int n = size / THREADS;
 
-  PiecewiseQuadraticLeakyReLUBackwardKernel<<<n + 1, THREADS, 0, custream>>>(
+  PiecewiseLeakyReLUBackwardKernel<<<n + 1, THREADS, 0, custream>>>(
       x, kernel_ptr->w_inv, kernel_ptr->w, kernel_ptr->c, dout, dx, size);
   cudaStreamSynchronize(custream);
   return 0;

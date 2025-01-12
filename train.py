@@ -33,7 +33,7 @@ set = GeneratorDataset(source=DVSSource(dataset_path, class_num=class_num), colu
 train_ds, test_ds = set.split([0.9, 0.1])
 # shuffle训练集并batch
 train_ds = train_ds.shuffle(train_ds.get_dataset_size())
-train_ds, test_ds = train_ds.batch(8), test_ds.batch(8)
+train_ds, test_ds = train_ds.batch(4), test_ds.batch(4)
 
 data_loader_train = train_ds.create_tuple_iterator(num_epochs=num_epochs)
 data_loader_test = test_ds.create_tuple_iterator(num_epochs=num_epochs)

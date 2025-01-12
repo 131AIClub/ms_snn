@@ -1,6 +1,6 @@
 import mindspore.nn as nn
 from mindspore.ops import Custom, CustomRegOp, DataType
-from mindspore import dtype, jit
+from mindspore import jit
 from importlib.resources import files, as_file
 
 
@@ -11,7 +11,7 @@ class SurrogateBase(nn.Cell):
     @staticmethod
     def get_aot_op(name: str, op_info, out_dtype, out_shape, bprop=None):
         pkg = files("ms_snn")
-        with as_file(pkg / "sorrogate"/"cuda"/"libms_snn.so") as path:
+        with as_file(pkg / "surrogate"/"cuda"/"libms_snn.so") as path:
             # 这里不用管什么类型
             op = Custom(func=f"{path}:{name}", out_dtype=out_dtype,
                         out_shape=out_shape, bprop=bprop, func_type="aot", reg_info=op_info)
