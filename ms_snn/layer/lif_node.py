@@ -4,54 +4,17 @@ import mindspore.nn as nn
 import mindspore.ops as ops
 
 from ..surrogate.atan import ATan
+from .base_node import BaseNode
 
 
-class LIFNode(nn.Cell):
+class LIFNode(BaseNode):
     def __init__(self, tau: float = 2., v_threshold: float = 1., v_reset: float = 0., surrogate_function: Callable = ATan(), store_v_seq=False, decay_input=True, detach_reset=True):
-        super(LIFNode, self).__init__()
+        super(LIFNode, self).__init__(v_threshold, v_reset, surrogate_function,
+                                      detach_reset, store_v_seq)
 
-        self.v_threshold = v_threshold
-        self.v_reset = v_reset
-
-        self.surrogate_function = surrogate_function
-
-        self.store_v_seq = store_v_seq
-        self.decay_input = decay_input
-        self.detach_reset = detach_reset
-
-        self.tau = tau
         self.v = 0
-
-    def construct(self, x: ms.Tensor):
-        self.v_float_to_tensor(x)
-        if self.training:
-            return self.construct_train(x)
-        else:
-            if self.v_reset is None:
-                if self.decay_input:
-                    spike, self.v = self.jit_eval_single_step_forward_soft_reset_decay_input(x, self.v,
-                                                                                             self.v_threshold, self.tau)
-                else:
-                    spike, self.v = self.jit_eval_single_step_forward_soft_reset_no_decay_input(x, self.v,
-                                                                                                self.v_threshold,
-                                                                                                self.tau)
-            else:
-                if self.decay_input:
-                    spike, self.v = self.jit_eval_single_step_forward_hard_reset_decay_input(x, self.v,
-                                                                                             self.v_threshold,
-                                                                                             self.v_reset, self.tau)
-                else:
-                    spike, self.v = self.jit_eval_single_step_forward_hard_reset_no_decay_input(x, self.v,
-                                                                                                self.v_threshold,
-                                                                                                self.v_reset,
-                                                                                                self.tau)
-        return spike
-
-    def construct_train(self, x: ms.Tensor):
-        self.neuronal_charge(x)
-        spike = self.neuronal_fire()
-        self.neuronal_reset(spike)
-        return spike
+        self.tau = tau
+        self.decay_input = decay_input
 
     def v_float_to_tensor(self, x: ms.Tensor):
         if isinstance(self.v, float):
@@ -80,7 +43,7 @@ class LIFNode(nn.Cell):
 
     def neuronal_reset(self, spike: ms.Tensor):
         if self.detach_reset:
-            spike_d = ms.tensor(spike.numpy())
+            spike_d = ops.stop_gradient(spike)
         else:
             spike_d = spike
 
@@ -118,7 +81,7 @@ class LIFNode(nn.Cell):
     def jit_eval_single_step_forward_hard_reset_decay_input(x: ms.Tensor, v: ms.Tensor, v_threshold: float,
                                                             v_reset: float, tau: float):
         v = v + (x - (v - v_reset)) / tau
-        spike = (v >= v_threshold).to(x)
+        spike = (v >= v_threshold)
         v = v_reset * spike + (1. - spike) * v
         return spike, v
 
@@ -127,7 +90,7 @@ class LIFNode(nn.Cell):
     def jit_eval_single_step_forward_hard_reset_no_decay_input(x: ms.Tensor, v: ms.Tensor, v_threshold: float,
                                                                v_reset: float, tau: float):
         v = v - (v - v_reset) / tau + x
-        spike = (v >= v_threshold).to(x)
+        spike = (v >= v_threshold)
         v = v_reset * spike + (1. - spike) * v
         return spike, v
 
@@ -136,7 +99,7 @@ class LIFNode(nn.Cell):
     def jit_eval_single_step_forward_soft_reset_decay_input(x: ms.Tensor, v: ms.Tensor, v_threshold: float,
                                                             tau: float):
         v = v + (x - v) / tau
-        spike = (v >= v_threshold).to(x)
+        spike = (v >= v_threshold)
         v = v - spike * v_threshold
         return spike, v
 
@@ -145,7 +108,7 @@ class LIFNode(nn.Cell):
     def jit_eval_single_step_forward_soft_reset_no_decay_input(x: ms.Tensor, v: ms.Tensor, v_threshold: float,
                                                                tau: float):
         v = v * (1. - 1. / tau) + x
-        spike = (v >= v_threshold).to(x)
+        spike = (v >= v_threshold)
         v = v - spike * v_threshold
         return spike, v
 
@@ -179,6 +142,8 @@ if __name__ == '__main__':
     lif_node_ms = LIFNode()
     lif_node_ms.set_train(True)
     result_ms = lif_node_ms(array_ms)
+    lif_node_ms.set_train(False)
+    result_ms_eval = lif_node_ms(array_ms)
 
     def net(x):
         return lif_node_ms(x).mean()
@@ -190,18 +155,12 @@ if __name__ == '__main__':
     lif_node_torch.train()
     result = lif_node_torch(array_torch)
     result_torch = result.detach().numpy()
+    lif_node_torch.eval()
+    result_torch_eval = lif_node_torch(array_torch)
     result.mean().backward()
     dout_torch = array_torch.grad
     np.set_printoptions(threshold=np.inf)
     if not np.allclose(result_ms.numpy(), result_torch, rtol=1e-5):
         print("bad forward implement for file "+__file__)
-        print(f"mindspore: {result_ms.numpy()}")
-        print(f"torch: {result_torch}")
-        print(f"difference: {(result_torch==result_ms.numpy())}")
-
-    if not np.allclose(dout_ms.numpy(), dout_torch.numpy(), rtol=1e-5):
-        print("bad backword implement for file "+__file__)
-        print(f"mindspore: {result_ms.numpy()}")
-        print(f"torch: {result_torch}")
-        print(f"mindspore: {dout_ms.numpy()}")
-        print(f"torch: {dout_torch.numpy()}")
+    if not np.allclose(result_ms_eval.numpy(), result_torch_eval, rtol=1e-5):
+        print("bad eval forward implement for file "+__file__)

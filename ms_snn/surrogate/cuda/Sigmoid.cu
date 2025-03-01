@@ -18,7 +18,7 @@ __global__ static void SigmoidBackwardKernel(const float *x, float alpha,
                                              int size) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < size) {
-    float sigmoid_ax = 1.0f / (1.0f + expf(-alpha) * x[idx]);
+    float sigmoid_ax = 1.0f / (1.0f + expf(-alpha * x[idx]));
     dx[idx] = ((1.0f - sigmoid_ax) * sigmoid_ax * alpha) * dout[idx];
   }
 }

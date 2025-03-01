@@ -50,7 +50,6 @@ if __name__ == '__main__':
     result = sigmoid_torch(array_torch).mean()
     result.backward()
     dout_torch = array_torch.grad
-    print(dout_torch)
 
     if not np.allclose(dout_ms.numpy(), dout_torch.numpy(), rtol=1e-5):
         print("bad implement for file "+__file__)
